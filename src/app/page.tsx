@@ -6,9 +6,11 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Page = () => {
   const [value, setValue] = useState("");
+  const queryClient = useQueryClient();
 
   const trpc = useTRPC();
   const { data: messages } = useQuery(trpc.messages.getMany.queryOptions());
@@ -16,6 +18,10 @@ const Page = () => {
     trpc.messages.create.mutationOptions({
       onSuccess() {
         toast.success("Message created successfully!");
+        queryClient.invalidateQueries({
+          queryKey: trpc.messages.getMany.queryKey(),
+        });
+        setValue("");
       },
       onError() {
         toast.error("Failed to create message.");
