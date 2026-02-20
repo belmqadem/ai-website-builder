@@ -3,50 +3,46 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 
 const Page = () => {
+  const router = useRouter();
   const [value, setValue] = useState("");
-  const queryClient = useQueryClient();
-
   const trpc = useTRPC();
-  const { data: messages } = useQuery(trpc.messages.getMany.queryOptions());
-  const createMessage = useMutation(
-    trpc.messages.create.mutationOptions({
-      onSuccess() {
-        toast.success("Message created successfully!");
-        queryClient.invalidateQueries({
-          queryKey: trpc.messages.getMany.queryKey(),
-        });
-        setValue("");
+
+  const createProject = useMutation(
+    trpc.projects.create.mutationOptions({
+      onSuccess: (data) => {
+        router.push(`/projects/${data.id}`);
       },
-      onError() {
-        toast.error("Failed to create message.");
+      onError: (error) => {
+        toast.error(error.message);
       },
     }),
   );
 
   return (
-    <div className="p-4 max-w-7xl mx-auto flex flex-col gap-4">
-      <Input
-        className="p-4"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
-      <Button
-        disabled={createMessage.isPending}
-        onClick={() => {
-          createMessage.mutate({ value: value });
-        }}
-      >
-        Submit
-      </Button>
-
-      {JSON.stringify(messages, null, 2)}
-    </div>
+    <main className="h-screen w-screen flex items-center justify-center">
+      <div className="px-8 w-full max-w-3xl mx-auto flex flex-col gap-y-4">
+        <Input
+          className="p-4 w-full block"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <Button
+          disabled={createProject.isPending}
+          onClick={() => {
+            createProject.mutate({ value: value });
+          }}
+          className="cursor-pointer"
+        >
+          Submit
+        </Button>
+      </div>
+    </main>
   );
 };
 
