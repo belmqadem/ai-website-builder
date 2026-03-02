@@ -30,6 +30,7 @@ const Page = () => {
         <Input
           className="p-4 w-full block"
           value={value}
+					placeholder="Describe what you want to build"
           onChange={(e) => setValue(e.target.value)}
         />
         <Button
